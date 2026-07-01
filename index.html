@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BO Lecture Playground</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="./assets/css/main.css?v=0.4.4">
+    <script src="./assets/vendor/plotly-2.35.2.min.js?v=2.35.2" defer></script>
+    <script src="./assets/js/app.bundle.js?v=0.6.10" defer></script>
+  </head>
+  <body data-page="app">
+    <header class="site-header">
+      <a class="brand" href="./index.html">BO Lecture Playground</a>
+      <nav class="top-nav" aria-label="Primary">
+        <a href="./index.html" aria-current="page">BO 실습</a>
+        <a href="./design.html">설계 문서</a>
+      </nav>
+    </header>
+
+    <main class="app-shell app-layout">
+      <aside class="control-panel">
+        <h1>BO 실습</h1>
+        <label>
+          입력 차원
+          <select id="dimension">
+            <option value="1">1D</option>
+            <option value="2">2D</option>
+            <option value="3">3D</option>
+          </select>
+        </label>
+        <label>
+          평가 함수 입력 방식
+          <select id="objective-mode">
+            <option value="formula">수식 입력</option>
+            <option value="draw">f 직접 그리기 (1D)</option>
+          </select>
+        </label>
+        <label>
+          평가 대상 함수 f
+          <textarea id="objective-formula" rows="4" spellcheck="false">0.45 + 0.14*sin(3*x) + 0.06*sin(6.75*x + 0.4) + 0.40*exp(-pow((x - 0.72)/0.36, 2)) + 0.30*exp(-pow((x - 2.88)/0.40, 2)) + 0.82*exp(-pow((x - 1.64)/0.24, 2))</textarea>
+          <span id="objective-formula-help" class="field-help">1D: 변수 x는 0~10 범위입니다. BO 후보 x 간격은 0.1입니다.</span>
+        </label>
+        <section id="draw-panel" class="draw-panel is-hidden" aria-label="1D 직접 그리기">
+          <canvas id="draw-canvas" width="260" height="150"></canvas>
+          <button id="draw-reset" type="button">그림 초기화</button>
+          <p class="field-help">마우스나 터치로 선을 그리면 그 곡선이 평가 대상 함수 f(x)가 됩니다.</p>
+        </section>
+        <label>
+          후보 선택 기준 (획득함수)
+          <select id="acquisition">
+            <option value="ei">Expected Improvement (EI)</option>
+            <option value="pi">Probability of Improvement (PI)</option>
+            <option value="ucb">Upper Confidence Bound (UCB)</option>
+            <option value="custom">사용자 정의 획득함수</option>
+          </select>
+        </label>
+        <label id="custom-af-field" class="is-hidden">
+          사용자 정의 획득함수 식
+          <input id="acquisition-formula" spellcheck="false" value="mu + 2*sigma">
+          <span class="field-help">획득함수 식에서 사용 가능: mu, sigma, best, x(0~10), y, z, t</span>
+        </label>
+        <label>
+          비교 sampling
+          <select id="sampler">
+            <option value="random">Random Sampling</option>
+            <option value="grid">Grid Sampling</option>
+            <option value="lhs">Latin Hypercube Sampling</option>
+          </select>
+        </label>
+        <label>
+          총 반복수
+          <input id="iterations" type="number" min="3" max="120" value="40">
+        </label>
+        <label>
+          현재 단계
+          <input id="iteration-slider" type="range" min="1" max="40" value="1">
+          <span id="iteration-readout" class="field-help">1 / 40</span>
+        </label>
+        <div class="button-row compact">
+          <button id="prev-step">이전</button>
+          <button id="play" class="primary">재생</button>
+          <button id="step">다음</button>
+          <button id="reset">초기화</button>
+        </div>
+      </aside>
+
+      <section class="visual-stage">
+        <div class="stage-header">
+          <div>
+            <p class="eyebrow">Bayesian Optimization</p>
+            <h2 id="stage-title">BO 평가 대상 함수 보기</h2>
+          </div>
+          <div class="stage-tools">
+            <p id="iteration-label" class="iteration-label">Iteration 0</p>
+            <div class="plot-toolbar" aria-label="그래프 보기 조절">
+              <button id="plot-fit" type="button">전체</button>
+              <button id="plot-zoom-in" type="button">확대</button>
+              <button id="plot-zoom-out" type="button">축소</button>
+              <button id="plot-focus" type="button">크게 보기</button>
+            </div>
+          </div>
+        </div>
+        <div id="main-plot" class="plot-area" role="img" aria-label="BO target function plot"></div>
+        <section id="model-panel" class="model-panel is-hidden" aria-label="1D GP posterior">
+          <article class="model-card">
+            <div class="model-card-header">
+              <h3>GP posterior</h3>
+              <p>선택 직전 관측점으로 계산한 평균과 95% band</p>
+            </div>
+            <div id="gp-plot" class="model-plot" role="img" aria-label="1D GP posterior plot"></div>
+          </article>
+        </section>
+      </section>
+
+      <aside class="explain-panel">
+        <h2>해석</h2>
+        <p id="acquisition-description"></p>
+        <dl class="metric-list">
+          <div>
+            <dt>BO best</dt>
+            <dd id="best-value">-</dd>
+          </div>
+          <div>
+            <dt>Sampling best</dt>
+            <dd id="sampling-best-value">-</dd>
+          </div>
+          <div>
+            <dt>비교 방식</dt>
+            <dd id="sampler-value">-</dd>
+          </div>
+          <div>
+            <dt>현재 차이</dt>
+            <dd id="comparison-value">-</dd>
+          </div>
+        </dl>
+        <p class="plot-caption">계산별 점수</p>
+        <div id="score-plot" class="mini-plot" aria-label="각 iteration에서 찍은 점수 비교"></div>
+        <p class="plot-caption">Best score</p>
+        <div id="comparison-plot" class="mini-plot" aria-label="BO와 sampling best value 비교"></div>
+        <p class="muted">
+          설정을 바꾸면 자동으로 다시 계산됩니다. 총 반복수는 BO와 sampling이 같은 예산으로 평가하는 횟수입니다.
+        </p>
+      </aside>
+    </main>
+  </body>
+</html>

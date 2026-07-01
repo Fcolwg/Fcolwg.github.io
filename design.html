@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>설계 문서 | BO Lecture Playground</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="./assets/css/main.css?v=0.4.3">
+  </head>
+  <body data-page="home">
+    <header class="site-header">
+      <a class="brand" href="./index.html">BO Lecture Playground</a>
+      <nav class="top-nav" aria-label="Primary">
+        <a href="./index.html">BO 실습</a>
+        <a href="./design.html" aria-current="page">설계 문서</a>
+      </nav>
+    </header>
+
+    <main class="doc-page">
+      <section class="doc-section">
+        <p class="eyebrow">Structure Design</p>
+        <h1>BO 강의용 앱 구조</h1>
+        <p>
+          교수자와 학생이 같은 링크에서 보는 단일 정적 웹앱 구조입니다.
+        </p>
+      </section>
+
+      <section class="doc-section">
+        <h2>단일 화면 구성</h2>
+        <ul>
+          <li>왼쪽: 차원, 평가 대상 함수 f, 획득함수, sampling, 반복수 제어</li>
+          <li>가운데: 1D/2D/3D 평가 대상 함수 f와 BO/sampling 관측점</li>
+          <li>가운데 아래: 1D GP posterior</li>
+          <li>오른쪽: BO best, sampling best, 계산별 점수, best score 그래프</li>
+        </ul>
+      </section>
+
+      <section class="doc-section">
+        <h2>계산 흐름</h2>
+        <ol>
+          <li>target function f 수식 입력 또는 1D 직접 그리기</li>
+          <li>initial sampling 생성</li>
+          <li>관측점 기반 GP posterior 추정</li>
+          <li>EI, PI, UCB 또는 사용자 정의 획득함수 계산</li>
+          <li>다음 후보점 선택</li>
+          <li>history snapshot 저장</li>
+          <li>iteration별 plot과 replay 제공</li>
+        </ol>
+      </section>
+
+      <section class="doc-section">
+        <h2>시각화 범위</h2>
+        <ul>
+          <li>1D: 평가 대상 함수 f, BO 관측점, sampling 관측점, 다음 후보점, GP posterior, 점수 그래프</li>
+          <li>2D: contour/heatmap, BO 관측점, sampling 관측점, 다음 후보점</li>
+          <li>3D 입력: 3D scatter와 z=0.5 slice view, 다음 후보점</li>
+        </ul>
+      </section>
+
+      <section class="doc-section">
+        <h2>구현 우선순위</h2>
+        <ol>
+          <li>1D GP posterior 설명 강화</li>
+          <li>2D 직접 그리기 heatmap 편집 추가</li>
+          <li>배포 URL 확정 후 QR 코드 삽입</li>
+        </ol>
+      </section>
+    </main>
+
+    <script src="./assets/js/app.bundle.js?v=0.6.1" defer></script>
+  </body>
+</html>
